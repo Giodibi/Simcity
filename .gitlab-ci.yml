@@ -1,0 +1,28 @@
+image: ubuntu:20.04
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+
+before_script:
+  - apt-get update -yqq
+  - apt-get install -yqq openjdk-17-jdk ant junit4
+  - java -version
+  - javac -version
+  - ant -version
+  - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+  - export PATH=$JAVA_HOME/bin:$PATH
+
+
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  script:
+    - ant compile 
+    - ant -Dlibs.CopyLibs.classpath=lib/org-netbeans-modules-java-j2seproject-copylibstask.jar -f build.xml jar
+
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test
+  script:
+    - ant test -Dlibs.junit_4.classpath=/usr/share/java/junit4.jar -Dlibs.hamcrest.classpath=/usr/share/java/hamcrest-core.jar
+
